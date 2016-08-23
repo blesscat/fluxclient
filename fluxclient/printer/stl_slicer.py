@@ -246,7 +246,8 @@ class StlSlicer(object):
             m_mesh = _printer.MeshObj(points, faces)
             m_mesh.apply_transform(self.parameter[n])
             m_mesh_merge.add_on(m_mesh)
-        m_mesh_merge = m_mesh_merge.cut(float(self.config['cut_bottom']))
+        if float(self.config['cut_bottom']) > 0:
+            m_mesh_merge = m_mesh_merge.cut(float(self.config['cut_bottom']))
 
         bounding_box = m_mesh_merge.bounding_box()
         cx, cy = (bounding_box[0][0] + bounding_box[1][0]) / 2., (bounding_box[0][1] + bounding_box[1][1]) / 2.
