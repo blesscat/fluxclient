@@ -241,11 +241,19 @@ class StlSlicer(object):
         tmp_slic3r_setting_file = tmp.name  # store gcode
 
         m_mesh_merge = _printer.MeshObj([], [])
+        m_mesh_merge_null = True
+
         for n in names:
             points, faces = self.models[n]
             m_mesh = _printer.MeshObj(points, faces)
             m_mesh.apply_transform(self.parameter[n])
-            m_mesh_merge.add_on(m_mesh)
+            if m_mesh_merge_null:
+                m_mesh_merge_null = False
+                m_mesh_merge = m_mesh
+                #Prevent reallocation for the 3d model
+            else:
+                m_mesh_merge.add_on(m_mesh)
+
         if float(self.config['cut_bottom']) > 0:
             m_mesh_merge = m_mesh_merge.cut(float(self.config['cut_bottom']))
 
@@ -864,12 +872,12 @@ class StlSlicerCura(StlSlicer):
 
         new_content['infillPattern'] = {'AUTOMATIC': 0, 'GRID': 1, 'LINES': 2, 'CONCENTRIC': 3}.get(content['fill_pattern'], 0)
 
-        if int(content['skirts']) == 0:  # brim
-            new_content['skirtLineCount'] = content['brim_width']
-            new_content['skirtDistance'] = 0
-        else:  # skirt
+        if int(content['brim_width']) == 0:  # skirt
             new_content['skirtLineCount'] = content['skirts']
             new_content['skirtDistance'] = thousand(content['skirt_distance'])
+        else:  # brim
+            new_content['skirtLineCount'] = content['brim_width']
+            new_content['skirtDistance'] = 0
 
         # other
         new_content['upSkinCount'] = content['top_solid_layers']
